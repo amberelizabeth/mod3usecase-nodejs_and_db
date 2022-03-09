@@ -20,7 +20,7 @@ const Student = config.define('Student', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    department: {
+    nationality: {
         type: Sequelize.STRING,
         allowNull: false
     }
