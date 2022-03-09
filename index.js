@@ -7,6 +7,31 @@ const Op = require('sequelize').Op;
 app.use(express.urlencoded({extended: false}));
 
 
+const routeTracker = function(req, res, next){
+    switch( req.method ){
+        case "GET":
+            app.locals.getStudent += 1;
+            break;
+        case "POST":
+            app.locals.postStudent += 1;
+            break;
+        case "PATCH":
+            app.locals.updateStudent += 1;
+            break;
+        case "DELETE":
+            app.locals.deleteStudent += 1;
+            break;
+        default:
+            console.log("NONE");
+    }
+
+    console.log(`\nGET:    ${app.locals.getStudent}`);
+    console.log(`POST:   ${app.locals.postStudent}`);
+    console.log(`UPDATE: ${app.locals.updateStudent}`);
+    console.log(`DELETE: ${app.locals.deleteStudent}`);
+    next();
+}
+
 //Establish connection to database
 config.authenticate().then(function(){
     console.log('Database is connected');
@@ -15,7 +40,7 @@ config.authenticate().then(function(){
 });
 
 //Get students
-app.get('/', function(req, res){
+app.get('/', routeTracker, (req, res)=>{
     let data = {
         where: {id:  {[Op.ne]: null}}
     }
@@ -36,7 +61,7 @@ app.get('/', function(req, res){
 });
 
 //Create a new student
-app.post('/', (req, res)=>{
+app.post('/', routeTracker, (req, res)=>{
     Student.create(req.body).then((result)=>{
         res.redirect('/'); //Redirect to the get route to display all students
     }).catch((err)=>{
@@ -45,7 +70,7 @@ app.post('/', (req, res)=>{
 });
 
 //Update name of a student
-app.patch('/:student_id', (req, res)=>{
+app.patch('/:student_id', routeTracker, (req, res)=>{
     app.locals.updateStudent += 1;
     let studentId = parseInt(req.params.student_id);
 
@@ -83,7 +108,7 @@ app.patch('/:student_id', (req, res)=>{
 });
 
 //Delete a student record
-app.delete('/:student_id', function(req, res){
+app.delete('/:student_id', routeTracker, (req, res)=>{
     let studentId = req.params.student_id;
 
     //Find the student
@@ -92,7 +117,7 @@ app.delete('/:student_id', function(req, res){
         if(result){
             //Delete student from database
             result.destroy().then(()=>{
-                res.redirect('/');
+                res.status(200).send(result);
             }).catch((err)=>{
                 res.status(500).send(err);
             });
@@ -106,10 +131,8 @@ app.delete('/:student_id', function(req, res){
 });
 
 
-app.listen(3000, function(){
-    app.locals.getAll = 0;
-    app.locals.getByStudentId = 0;
-    app.locals.getBySection = 0;
+app.listen(3000, ()=>{
+    app.locals.getStudent = 0;
     app.locals.postStudent = 0;
     app.locals.updateStudent = 0;
     app.locals.deleteStudent = 0;
