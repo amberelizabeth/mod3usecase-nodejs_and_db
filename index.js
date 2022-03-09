@@ -47,7 +47,7 @@ app.post('/', (req, res)=>{
 //Update name of a student
 app.patch('/:student_id', (req, res)=>{
     app.locals.updateStudent += 1;
-    let studentId = req.params.id;
+    let studentId = parseInt(req.params.student_id);
 
     //Find the student 
     Student.findByPk(studentId).then((result)=>{
@@ -57,7 +57,7 @@ app.patch('/:student_id', (req, res)=>{
                 result.name = req.body.name;
             }
             if(req.body.gpa !== undefined){
-                result.gpa = req.body.gpa;
+                result.gpa = parseFloat(req.body.gpa);
             }
             if(req.body.section !== undefined){
                 result.section = req.body.section;
