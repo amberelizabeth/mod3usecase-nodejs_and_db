@@ -10,7 +10,15 @@ app.use(express.urlencoded({extended: false}));
 const routeTracker = function(req, res, next){
     switch( req.method ){
         case "GET":
-            app.locals.getStudent += 1;
+            if(req.body.id !== undefined){
+                app.locals.getStudentsID += 1;
+            }
+            if(req.body.section !== undefined){
+                app.locals.getStudentsSection += 1;
+            }
+            if(!req.body.id && !req.body.section){
+                app.locals.getStudents += 1;
+            }
             break;
         case "POST":
             app.locals.postStudent += 1;
@@ -25,10 +33,12 @@ const routeTracker = function(req, res, next){
             console.log("NONE");
     }
 
-    console.log(`\nGET:    ${app.locals.getStudent}`);
-    console.log(`POST:   ${app.locals.postStudent}`);
-    console.log(`UPDATE: ${app.locals.updateStudent}`);
-    console.log(`DELETE: ${app.locals.deleteStudent}`);
+    console.log(`\nGET:            ${app.locals.getStudents}`);
+    console.log(`GET by ID:      ${app.locals.getStudentsID}`);
+    console.log(`GET by Section: ${app.locals.getStudentsSection}`);
+    console.log(`POST:           ${app.locals.postStudent}`);
+    console.log(`UPDATE:         ${app.locals.updateStudent}`);
+    console.log(`DELETE:         ${app.locals.deleteStudent}`);
     next();
 }
 
@@ -63,7 +73,7 @@ app.get('/', routeTracker, (req, res)=>{
 //Create a new student
 app.post('/', routeTracker, (req, res)=>{
     Student.create(req.body).then((result)=>{
-        res.redirect('/'); //Redirect to the get route to display all students
+        res.status(200).send(result); //Redirect to the get route to display all students
     }).catch((err)=>{
         res.status(500).send(err);
     });
@@ -132,7 +142,9 @@ app.delete('/:student_id', routeTracker, (req, res)=>{
 
 
 app.listen(3000, ()=>{
-    app.locals.getStudent = 0;
+    app.locals.getStudents = 0;
+    app.locals.getStudentsID = 0;
+    app.locals.getStudentsSection = 0;
     app.locals.postStudent = 0;
     app.locals.updateStudent = 0;
     app.locals.deleteStudent = 0;
